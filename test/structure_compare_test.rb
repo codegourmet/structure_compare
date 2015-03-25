@@ -62,7 +62,7 @@ class StructureCompareTest < MiniTest::Test
   def test_compares_with_tolerance_if_options_set
     assert_structures_equal(%w(a b c d), %w(a b c d), {
       # just to catch bugs with this option concerning non-floats
-      check_values: true, values_tolerance_factor: 0.1
+      check_values: true, float_tolerance_factor: 0.1
     })
 
     refute_structures_equal([1.0, 2.0, 3.0], [1.0001, 2.0001, 3.0001], {
@@ -70,35 +70,35 @@ class StructureCompareTest < MiniTest::Test
     })
 
     assert_structures_equal([1.0, 2.0, 3.0], [1.0001, 2.0001, 3.0001], {
-      check_values: true, values_tolerance_factor: 0.1
+      check_values: true, float_tolerance_factor: 0.1
     })
     assert_structures_equal([1.0, 2.0, 3.0], [1.1, 2.1, 3.1], {
-      check_values: true, values_tolerance_factor: 0.1
+      check_values: true, float_tolerance_factor: 0.1
     })
     assert_structures_equal([1.0, 2.0, 3.0], [0.9, 1.9, 2.9], {
-      check_values: true, values_tolerance_factor: 0.1
+      check_values: true, float_tolerance_factor: 0.1
     })
 
     assert_structures_equal(
       [1.0, 2.0, 3.0],
       [0.9 - Float::EPSILON * 0.5, 2.1, 3.1],
-      { check_values: true, values_tolerance_factor: 0.1 }
+      { check_values: true, float_tolerance_factor: 0.1 }
     )
     refute_structures_equal(
       [1.0, 2.0, 3.0],
       [0.9 - Float::EPSILON * 2, 2.1, 3.1],
-      { check_values: true, values_tolerance_factor: 0.1 }
+      { check_values: true, float_tolerance_factor: 0.1 }
     )
 
     assert_structures_equal(
       [1.0, 2.0, 3.0],
       [1.1 + Float::EPSILON * 0.5, 2.1, 3.1],
-      { check_values: true, values_tolerance_factor: 0.1 }
+      { check_values: true, float_tolerance_factor: 0.1 }
     )
     refute_structures_equal(
       [1.0, 2.0, 3.0],
       [1.1 + Float::EPSILON * 2, 2.1, 3.1],
-      { check_values: true, values_tolerance_factor: 0.1 }
+      { check_values: true, float_tolerance_factor: 0.1 }
     )
   end
 

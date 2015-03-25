@@ -21,7 +21,7 @@ module StructureCompare
       options = { # TODO doc
         strict_key_order: false,
         check_values: false,
-        values_tolerance_factor: 0
+        float_tolerance_factor: 0
       }.merge(options)
 
       check_kind_of!(expected, actual)
@@ -69,7 +69,7 @@ module StructureCompare
     def self.check_equal!(expected, actual, options)
       if expected.is_a?(Float) && actual.is_a?(Float)
         is_equal = float_equal_with_tolerance_factor?(
-          expected, actual, options[:values_tolerance_factor]
+          expected, actual, options[:float_tolerance_factor]
         )
       else
         is_equal = (expected == actual)
