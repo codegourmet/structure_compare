@@ -41,7 +41,7 @@ class StructureCompareTest < MiniTest::Test
   def test_compares_floats_correctly
     assert_structures_equal([1.0, 2.0, 3.0], [1.0, 2.0, 3.0], check_values: true)
     assert_structures_equal(
-      [1.0 - Float::EPSILON * 0.999, 2.0 + Float::EPSILON * 0.999, 3.0],
+      [1.0 - Float::EPSILON * 0.5, 2.0 + Float::EPSILON * 0.5, 3.0],
       [1.0, 2.0, 3.0],
       check_values: true
     )
@@ -60,12 +60,14 @@ class StructureCompareTest < MiniTest::Test
   end
 
   def test_compares_with_tolerance_if_options_set
-    skip "NYI"
     assert_structures_equal(%w(a b c d), %w(a b c d), {
-      check_values: true, values_tolerance_factor: 0.1 # just to catch bugs concerning non-floats
+      # just to catch bugs with this option concerning non-floats
+      check_values: true, values_tolerance_factor: 0.1
     })
 
-    refute_structures_equal([1.0, 2.0, 3.0], [1.0001, 2.0001, 3.0001], check_values: true)
+    refute_structures_equal([1.0, 2.0, 3.0], [1.0001, 2.0001, 3.0001], {
+      check_values: true
+    })
 
     assert_structures_equal([1.0, 2.0, 3.0], [1.0001, 2.0001, 3.0001], {
       check_values: true, values_tolerance_factor: 0.1
@@ -73,9 +75,31 @@ class StructureCompareTest < MiniTest::Test
     assert_structures_equal([1.0, 2.0, 3.0], [1.1, 2.1, 3.1], {
       check_values: true, values_tolerance_factor: 0.1
     })
-    refute_structures_equal([1.0, 2.0, 3.0], [1.11, 2.11, 3.11], { # TODO float epsilon
+    assert_structures_equal([1.0, 2.0, 3.0], [0.9, 1.9, 2.9], {
       check_values: true, values_tolerance_factor: 0.1
     })
+
+    assert_structures_equal(
+      [1.0, 2.0, 3.0],
+      [0.9 - Float::EPSILON * 0.5, 2.1, 3.1],
+      { check_values: true, values_tolerance_factor: 0.1 }
+    )
+    refute_structures_equal(
+      [1.0, 2.0, 3.0],
+      [0.9 - Float::EPSILON * 2, 2.1, 3.1],
+      { check_values: true, values_tolerance_factor: 0.1 }
+    )
+
+    assert_structures_equal(
+      [1.0, 2.0, 3.0],
+      [1.1 + Float::EPSILON * 0.5, 2.1, 3.1],
+      { check_values: true, values_tolerance_factor: 0.1 }
+    )
+    refute_structures_equal(
+      [1.0, 2.0, 3.0],
+      [1.1 + Float::EPSILON * 2, 2.1, 3.1],
+      { check_values: true, values_tolerance_factor: 0.1 }
+    )
   end
 
   def test_todo_path_error_result_etc

@@ -79,7 +79,12 @@ module StructureCompare
     end
 
     def self.float_equal_with_tolerance_factor?(expected, actual, tolerance_factor)
-      (expected - actual).abs <= Float::EPSILON
+      raise ArgumentError.new("tolerance_factor must be > 0") if tolerance_factor < 0
+
+      lower_bound = (expected * (1.0 - tolerance_factor) - Float::EPSILON)
+      upper_bound = (expected * (1.0 + tolerance_factor) + Float::EPSILON)
+
+      return (lower_bound <= actual) && (actual <= upper_bound)
     end
 
     # TODO make this part of an overridden exception?
