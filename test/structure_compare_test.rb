@@ -6,10 +6,6 @@ class StructureCompareTest < MiniTest::Test
   def setup
   end
 
-  def test_compares_simple_structures
-    assert_structures_equal({a: 1, b: 2}, {a: 1, b: 2})
-  end
-
   def test_compares_keys_of_hashes
     refute_structures_equal({a: 1, b: 2}, {a: 1, other_key: 2})
     refute_structures_equal({a: 1, b: 2}, {a: 1, b: 2, c: 3})
@@ -21,15 +17,69 @@ class StructureCompareTest < MiniTest::Test
     refute_structures_equal({a: 1, b: 2}, {b: 2, a: 1}, strict_key_order: true)
   end
 
+  def test_compares_leaf_value_types
+    assert_structures_equal({a: 1, b: 2}, {b: 2, a: 1})
+    refute_structures_equal({a: 1, b: 2}, {a: 1, b: 2.0})
+
+    assert_structures_equal(%w(a b c d), %w(a b c d))
+    refute_structures_equal(%w(a b c d), ['a', 'b', 'c', 111])
+  end
+
   def test_leaf_values_are_compared_if_option_set
     assert_structures_equal({a: 1, b: 2}, {a: 111, b: 222})
     refute_structures_equal({a: 1, b: 2}, {a: 111, b: 222}, check_values: true)
+
+    assert_structures_equal(%w(a b c d), %w(a b c d))
+    refute_structures_equal(%w(a b c d), %w(A b c d), check_values: true)
   end
 
-  def test_compares_leaf_value_types
-    refute_structures_equal({a: 1, b: 2}, {a: 1, b: "2"})
-    refute_structures_equal({a: 1, b: 2}, {a: 1, b: 2.0})
-    refute_structures_equal({a: 1, b: 2}, {a: Time.now, b: 2})
+  def test_compares_arrays
+    assert_structures_equal([1, 2, 3], [1, 2, 3])
+    refute_structures_equal([1, 2], [1, 2, 3])
+  end
+
+  def test_compares_floats_correctly
+    assert_structures_equal([1.0, 2.0, 3.0], [1.0, 2.0, 3.0], check_values: true)
+    assert_structures_equal(
+      [1.0 - Float::EPSILON * 0.999, 2.0 + Float::EPSILON * 0.999, 3.0],
+      [1.0, 2.0, 3.0],
+      check_values: true
+    )
+
+    refute_structures_equal(
+      [1.0 - Float::EPSILON * 2, 2.0, 3.0],
+      [1.0, 2.0, 3.0],
+      check_values: true
+    )
+
+    refute_structures_equal(
+      [1.0 + Float::EPSILON * 2, 2.0, 3.0],
+      [1.0, 2.0, 3.0],
+      check_values: true
+    )
+  end
+
+  def test_compares_with_tolerance_if_options_set
+    skip "NYI"
+    assert_structures_equal(%w(a b c d), %w(a b c d), {
+      check_values: true, values_tolerance_factor: 0.1 # just to catch bugs concerning non-floats
+    })
+
+    refute_structures_equal([1.0, 2.0, 3.0], [1.0001, 2.0001, 3.0001], check_values: true)
+
+    assert_structures_equal([1.0, 2.0, 3.0], [1.0001, 2.0001, 3.0001], {
+      check_values: true, values_tolerance_factor: 0.1
+    })
+    assert_structures_equal([1.0, 2.0, 3.0], [1.1, 2.1, 3.1], {
+      check_values: true, values_tolerance_factor: 0.1
+    })
+    refute_structures_equal([1.0, 2.0, 3.0], [1.11, 2.11, 3.11], { # TODO float epsilon
+      check_values: true, values_tolerance_factor: 0.1
+    })
+  end
+
+  def test_todo_path_error_result_etc
+    skip "NYI"
   end
 
   protected
