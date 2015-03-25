@@ -38,6 +38,10 @@ class StructureCompareTest < MiniTest::Test
     refute_structures_equal([1, 2], [1, 2, 3])
   end
 
+  def test_compares_deep_structures
+    skip "NYI"
+  end
+
   def test_compares_floats_correctly
     assert_structures_equal([1.0, 2.0, 3.0], [1.0, 2.0, 3.0], check_values: true)
     assert_structures_equal(
