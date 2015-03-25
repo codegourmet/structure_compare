@@ -15,14 +15,15 @@ class StructureCompareTest < MiniTest::Test
     refute_structures_equal({a: 1, b: 2}, {a: 1, b: 2, c: 3})
   end
 
-  def test_hash_key_order_is_compared_when_option_set
+  def test_hash_key_order_is_compared_if_option_set
     assert_structures_equal({a: 1, b: 2}, {b: 2, a: 1})
     assert_structures_equal({a: 1, b: 2}, {b: 2, a: 1}, strict_key_order: false)
     refute_structures_equal({a: 1, b: 2}, {b: 2, a: 1}, strict_key_order: true)
   end
 
-  def test_leaf_values_are_irrelevant
+  def test_leaf_values_are_compared_if_option_set
     assert_structures_equal({a: 1, b: 2}, {a: 111, b: 222})
+    refute_structures_equal({a: 1, b: 2}, {a: 111, b: 222}, check_values: true)
   end
 
   def test_compares_leaf_value_types

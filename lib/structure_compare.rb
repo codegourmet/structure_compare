@@ -7,8 +7,8 @@ module StructureCompare
 
   def self.structures_are_equal?(expected, actual, options = {})
     options = { # TODO doc
-      strict_key_order: false # ,
-      # check_values: false
+      strict_key_order: false,
+      check_values: false
       # values_tolerance: 0
     }.merge(options)
 
@@ -57,7 +57,7 @@ module StructureCompare
     end
 
     def self.check_leafs_equal!(expected, actual, options)
-      return # TODO compare values if flag. compare values with tolerance if setting
+      check_equal!(expected, actual) if options[:check_values]
     end
 
     def self.check_kind_of!(expected, actual)
