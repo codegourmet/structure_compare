@@ -6,98 +6,108 @@ module StructureCompare
   class StructuresNotEqualError < RuntimeError; end
   class ArgumentError < ArgumentError; end
 
-  def self.structures_are_equal?(expected, actual, options = {})
-    begin
-      check_structures_equal!(expected, actual, options)
-    rescue StructuresNotEqualError => _error
-      return false
-    end
-
-    return true
+  def self.structures_are_equal?(expected, actual, options)
+    comparison = StructureComparison.new(options)
+    comparison.structures_are_equal?(expected, actual)
   end
 
-  protected
-
-    def self.check_structures_equal!(expected, actual, options)
-      options = { # TODO doc
+  # this is wrapped in a class so that we don't have to pass the
+  # options argument around for every single call during recursion
+  class StructureComparison
+    def initialize(options)
+      @options = {
         strict_key_order: false,
         check_values: false,
         treat_hash_symbols_as_strings: false,
         float_tolerance_factor: 0
       }.merge(options)
+    end
 
-      check_kind_of!(expected, actual, options)
+    def structures_are_equal?(expected, actual)
+      begin
+        check_structures_equal!(expected, actual)
+      rescue StructuresNotEqualError => _error
+        return false
+      end
+
+      return true
+    end
+
+    protected
+
+    def check_structures_equal!(expected, actual)
+      check_kind_of!(expected, actual)
 
       case expected
       when Array
-        check_arrays_equal!(expected, actual, options)
+        check_arrays_equal!(expected, actual)
       when Hash
-        check_hashes_equal!(expected, actual, options)
+        check_hashes_equal!(expected, actual)
       else
-        check_leafs_equal!(expected, actual, options)
+        check_leafs_equal!(expected, actual)
       end
     end
 
-    def self.check_arrays_equal!(expected, actual, options)
-      check_equal!(expected.count, actual.count, options)
+    def check_arrays_equal!(expected, actual)
+      check_equal!(expected.count, actual.count)
 
       expected.each_with_index do |expected_value, index|
-        check_structures_equal!(expected_value, actual[index], options)
+        check_structures_equal!(expected_value, actual[index])
       end
     end
 
-    def self.check_hashes_equal!(expected, actual, options)
-      check_hash_keys_equal!(expected, actual, options)
+    def check_hashes_equal!(expected, actual)
+      check_hash_keys_equal!(expected, actual)
 
       expected_values = expected.values
       actual_values = actual.values
 
       expected_values.each_with_index do |expected_value, index|
-        check_structures_equal!(expected_value, actual_values[index], options)
+        check_structures_equal!(expected_value, actual_values[index])
       end
     end
 
-    def self.check_hash_keys_equal!(expected, actual, options)
+    def check_hash_keys_equal!(expected, actual)
       expected_keys = expected.keys
       actual_keys = actual.keys
 
-      if options[:treat_hash_symbols_as_strings]
+      if @options[:treat_hash_symbols_as_strings]
         # NOTE: not all hash keys are symbols/strings, only convert symbols
         expected_keys.map! { |key| key.is_a?(Symbol) ? key.to_s : key }
         actual_keys.map! { |key| key.is_a?(Symbol) ? key.to_s : key }
       end
 
-      if options[:strict_key_order]
-        check_equal!(expected_keys, actual_keys, options)
+      if @options[:strict_key_order]
+        check_equal!(expected_keys, actual_keys)
       else
         begin
           expected_keys.sort!
           actual_keys.sort!
         rescue ::ArgumentError => error
-          raise self::ArgumentError.new(
+          raise StructureCompare::ArgumentError.new(
             "Unable to sort hash keys: \"#{error}\"." +
             'Try enabling :strict_key_order option to prevent sorting of mixed-type hash keys.'
           )
         end
 
-        check_equal!(expected_keys, actual_keys, options)
+        check_equal!(expected_keys, actual_keys)
       end
     end
 
-    def self.check_leafs_equal!(expected, actual, options)
-      check_equal!(expected, actual, options) if options[:check_values]
+    def check_leafs_equal!(expected, actual)
+      check_equal!(expected, actual) if @options[:check_values]
     end
 
-    def self.check_kind_of!(expected, actual, options)
+    def check_kind_of!(expected, actual)
       unless actual.kind_of?(expected.class)
         not_equal_error!(expected, actual)
       end
     end
 
-    def self.check_equal!(expected, actual, options)
+    def check_equal!(expected, actual)
       if expected.is_a?(Float) && actual.is_a?(Float)
         is_equal = float_equal_with_tolerance_factor?(
-          expected, actual, options[:float_tolerance_factor]
+          expected, actual, @options[:float_tolerance_factor]
         )
       else
         is_equal = (expected == actual)
@@ -106,8 +116,8 @@ module StructureCompare
       not_equal_error!(expected, actual) if !is_equal
     end
 
-    def self.float_equal_with_tolerance_factor?(expected, actual, tolerance_factor)
-      raise self::ArgumentError.new("tolerance_factor must be > 0") if tolerance_factor < 0
+    def float_equal_with_tolerance_factor?(expected, actual, tolerance_factor)
+      raise StructureCompare::ArgumentError.new("tolerance_factor must be > 0") if tolerance_factor < 0
 
       lower_bound = (expected * (1.0 - tolerance_factor) - Float::EPSILON)
       upper_bound = (expected * (1.0 + tolerance_factor) + Float::EPSILON)
@@ -116,9 +126,10 @@ module StructureCompare
     end
 
     # TODO make this part of an overridden exception?
-    def self.not_equal_error!(expected, actual)
+    def not_equal_error!(expected, actual)
       raise StructuresNotEqualError.new() # TODO error message, path
     end
+  end
 
 end
 

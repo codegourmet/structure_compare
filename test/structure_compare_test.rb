@@ -127,6 +127,14 @@ class StructureCompareTest < MiniTest::Test
     )
   end
 
+  def test_ensures_tolerance_factor_is_gt_0
+    assert_raises StructureCompare::ArgumentError do
+      assert_structures_equal(
+        [1.0], [1.0], check_values: true, float_tolerance_factor: -0.1
+      )
+    end
+  end
+
   def test_todo_path_error_result_etc
     skip "NYI"
   end
@@ -134,11 +142,11 @@ class StructureCompareTest < MiniTest::Test
   protected
 
     def assert_structures_equal(expected, actual, options = {})
-      assert StructureCompare.structures_are_equal?(expected, actual, options)
+      assert StructureCompare::structures_are_equal?(expected, actual, options)
     end
 
     def refute_structures_equal(expected, actual, options = {})
-      refute StructureCompare.structures_are_equal?(expected, actual, options)
+      refute StructureCompare::structures_are_equal?(expected, actual, options)
     end
 
 end
