@@ -6,15 +6,8 @@ module StructureCompare
   class StructuresNotEqualError < RuntimeError; end
   class ArgumentError < ArgumentError; end
 
-  def self.structures_are_equal?(expected, actual, options)
-    comparison = StructureComparison.new(options)
-    comparison.structures_are_equal?(expected, actual)
-  end
-
-  # this is wrapped in a class so that we don't have to pass the
-  # options argument around for every single call during recursion
   class StructureComparison
-    def initialize(options)
+    def initialize(options = {})
       @options = {
         strict_key_order: false,
         check_values: false,
@@ -23,7 +16,11 @@ module StructureCompare
       }.merge(options)
     end
 
+    # TODO doc
     def structures_are_equal?(expected, actual)
+      @path = []
+      @error = nil
+
       begin
         check_structures_equal!(expected, actual)
       rescue StructuresNotEqualError => _error
@@ -31,6 +28,11 @@ module StructureCompare
       end
 
       return true
+    end
+
+    # TODO doc
+    def error
+      "#{@path.join} : #{@error}"
     end
 
     protected
@@ -49,10 +51,16 @@ module StructureCompare
     end
 
     def check_arrays_equal!(expected, actual)
-      check_equal!(expected.count, actual.count)
+      check_equal!(
+        expected.count, actual.count, "array length: #{expected.count} != #{actual.count}"
+      )
 
       expected.each_with_index do |expected_value, index|
+        path_segment = "[#{index}]"
+        @path.push(path_segment)
+
         check_structures_equal!(expected_value, actual[index])
+        @path.pop
       end
     end
 
@@ -63,7 +71,12 @@ module StructureCompare
       actual_values = actual.values
 
       expected_values.each_with_index do |expected_value, index|
+        key = expected.keys[index]
+        path_segment = key.is_a?(Symbol) ? "[:#{key}]" : "[\"#{key}\"]"
+        @path.push(path_segment)
+
         check_structures_equal!(expected_value, actual_values[index])
+        @path.pop
       end
     end
 
@@ -100,11 +113,12 @@ module StructureCompare
 
     def check_kind_of!(expected, actual)
       unless actual.kind_of?(expected.class)
-        not_equal_error!(expected, actual)
+        failure_message = "expected #{actual.class.to_s} to be kind of #{expected.class.to_s}"
+        not_equal_error!(expected, actual, failure_message)
       end
     end
 
-    def check_equal!(expected, actual)
+    def check_equal!(expected, actual, failure_message = nil)
       if expected.is_a?(Float) && actual.is_a?(Float)
         is_equal = float_equal_with_tolerance_factor?(
           expected, actual, @options[:float_tolerance_factor]
@@ -113,7 +127,10 @@ module StructureCompare
         is_equal = (expected == actual)
       end
 
-      not_equal_error!(expected, actual) if !is_equal
+      if !is_equal
+        failure_message ||= "expected: #{expected.inspect}, got: #{actual.inspect}"
+        not_equal_error!(expected, actual, failure_message)
+      end
     end
 
     def float_equal_with_tolerance_factor?(expected, actual, tolerance_factor)
@@ -126,7 +143,8 @@ module StructureCompare
     end
 
     # TODO make this part of an overridden exception?
-    def not_equal_error!(expected, actual)
+    def not_equal_error!(expected, actual, failure_message)
+      @error = failure_message
       raise StructuresNotEqualError.new() # TODO error message, path
     end
   end
