@@ -42,6 +42,27 @@ class StructureCompareTest < MiniTest::Test
     skip "NYI"
   end
 
+  def test_mixed_type_hash_keys_trigger_error_unless_strict_order_set
+    hash = { a: 1, 5 => 6 }
+
+    assert_raises StructureCompare::ArgumentError do
+      assert_structures_equal(hash, hash)
+    end
+
+    assert_structures_equal(hash, hash, strict_key_order: true)
+  end
+
+  def test_symbol_keys_are_strings_if_option_set
+    string_hash = {"a" => 1, "b" => 2, 5 => 6}
+    symbol_hash = {a: 1, b: 2, 5 => 6}
+
+    refute_structures_equal(string_hash, symbol_hash, strict_key_order: true)
+    assert_structures_equal(
+      string_hash, symbol_hash,
+      treat_hash_symbols_as_strings: true, strict_key_order: true
+    )
+  end
+
   def test_compares_floats_correctly
     assert_structures_equal([1.0, 2.0, 3.0], [1.0, 2.0, 3.0], check_values: true)
     assert_structures_equal(

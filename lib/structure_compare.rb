@@ -4,6 +4,7 @@
 module StructureCompare
 
   class StructuresNotEqualError < RuntimeError; end
+  class ArgumentError < ArgumentError; end
 
   def self.structures_are_equal?(expected, actual, options = {})
     begin
@@ -21,10 +22,11 @@ module StructureCompare
       options = { # TODO doc
         strict_key_order: false,
         check_values: false,
+        treat_hash_symbols_as_strings: false,
         float_tolerance_factor: 0
       }.merge(options)
 
-      check_kind_of!(expected, actual)
+      check_kind_of!(expected, actual, options)
 
       case expected
       when Array
@@ -45,14 +47,40 @@ module StructureCompare
     end
 
     def self.check_hashes_equal!(expected, actual, options)
-      if options[:strict_key_order]
-        check_equal!(expected.keys, actual.keys, options)
-      else
-        check_equal!(expected.keys.sort, actual.keys.sort, options)
+      check_hash_keys_equal!(expected, actual, options)
+
+      expected_values = expected.values
+      actual_values = actual.values
+
+      expected_values.each_with_index do |expected_value, index|
+        check_structures_equal!(expected_value, actual_values[index], options)
+      end
+    end
+
+    def self.check_hash_keys_equal!(expected, actual, options)
+      expected_keys = expected.keys
+      actual_keys = actual.keys
+
+      if options[:treat_hash_symbols_as_strings]
+        # NOTE: not all hash keys are symbols/strings, only convert symbols
+        expected_keys.map! { |key| key.is_a?(Symbol) ? key.to_s : key }
+        actual_keys.map! { |key| key.is_a?(Symbol) ? key.to_s : key }
       end
 
-      expected.each do |expected_key, expected_value|
-        check_structures_equal!(expected_value, actual[expected_key], options)
+      if options[:strict_key_order]
+        check_equal!(expected_keys, actual_keys, options)
+      else
+        begin
+          expected_keys.sort!
+          actual_keys.sort!
+        rescue ::ArgumentError => error
+          raise self::ArgumentError.new(
+            "Unable to sort hash keys: \"#{error}\"." +
+            'Try enabling :strict_key_order option to prevent sorting of mixed-type hash keys.'
+          )
+        end
+
+        check_equal!(expected_keys, actual_keys, options)
       end
     end
 
@@ -60,7 +88,7 @@ module StructureCompare
       check_equal!(expected, actual, options) if options[:check_values]
     end
 
-    def self.check_kind_of!(expected, actual)
+    def self.check_kind_of!(expected, actual, options)
       unless actual.kind_of?(expected.class)
         not_equal_error!(expected, actual)
       end
@@ -79,7 +107,7 @@ module StructureCompare
     end
 
     def self.float_equal_with_tolerance_factor?(expected, actual, tolerance_factor)
-      raise ArgumentError.new("tolerance_factor must be > 0") if tolerance_factor < 0
+      raise self::ArgumentError.new("tolerance_factor must be > 0") if tolerance_factor < 0
 
       lower_bound = (expected * (1.0 - tolerance_factor) - Float::EPSILON)
       upper_bound = (expected * (1.0 + tolerance_factor) + Float::EPSILON)
