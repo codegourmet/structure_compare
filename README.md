@@ -5,6 +5,11 @@ Compares the structure of two deep nested Ruby structures
 ## General
 
 Use case: you're writing an API response or a JSON export and want to unit test it.
+Optionally you can ignore the leaf values or any hash key types/order (see below).
+
+Gives error results with the path to where exactly the structures differ.
+
+This README file is mirrored on [my blog](http://blog.codegourmet.de/2015/05/21/comparing-deeply-nested-structures/)
 
 ## Installation
 
@@ -12,7 +17,12 @@ Use case: you're writing an API response or a JSON export and want to unit test 
 gem install structure_compare
 ```
 
-or add it to your `Gemfile`
+or add it to your `Gemfile`:
+
+```
+gem structure_compare
+```
+
 
 ### quick-n-dirty example:
 ```ruby
@@ -39,8 +49,7 @@ refute_structures_equal({ a: 1, b: 2 }, { c: 1, d: 2 })
 ### Options
 
 #### Strict key ordering
-name: `strict_key_order`
-default: false
+name: `strict_key_order` (default: `false`)
 
 ```ruby
 expected = { a: 1, b: 2 }
@@ -52,8 +61,7 @@ comparison.structures_are_equal?(expected, actual)
 ```
 
 #### Value checking
-name: `strict_key_order`
-default: true
+name: `check_values` (default: `true`)
 
 ```ruby
 expected = { a: 1, b: { c: 1 } }
@@ -70,15 +78,15 @@ comparison.structures_are_equal?(expected, actual)
 
 #### Indifferent Access
 Hash symbol keys are treated as equal to string keys
+
 NOTE: an exception will be raised if there's a key present as symbol _and_ string
 
-name: `indifferent_access`
-default: false
+name: `indifferent_access` (default: `false`)
 
+```ruby
 expected = { a: 1 }
 actual   = { "a" => 1 }
 
-```ruby
 comparison = StructureCompare::StructureComparison.new
 comparison.structures_are_equal?(expected, actual)
 # => false
@@ -96,11 +104,12 @@ comparison.structures_are_equal?(hash, hash)
 #### Float tolerance
 
 When dealing with floats, you will want to introduce a tolerance.
+
 NOTE: Float::EPSILON is _always_ used for comparing Float type values.
+
 NOTE: The `check_values` option must be set.
 
-name: `float_tolerance_factor`
-default: 0
+name: `float_tolerance_factor` (default: `0`)
 
 ```
 tolerance = +- (expected * (1.0 + tolerance_factor) + Float::EPSILON)
@@ -128,10 +137,11 @@ comparison.structures_are_equal?(expected, actual_2)
 ## TODOS
 
 RSpec helpers.
+Refactoring.
 
-## Contribution
+## Contributing
 
-Fork me and send me a pull request with working tests.
+Fork me and send me a pull request with your feature and working tests, or just request a feature.
 
 ## License
 
