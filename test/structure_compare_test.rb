@@ -39,6 +39,18 @@ class StructureCompareTest < MiniTest::Test
     refute_structures_equal([1, 2], [1, 2, 3])
   end
 
+  def test_with_strict_key_order_off_compares_correct_values
+    structure_a = { a: 1, b: 2 }
+    structure_b = { b: 2, a: 1 }
+    assert_structures_equal(
+      structure_a, structure_b, check_values: true, strict_key_order: false
+    )
+
+    structure_a = { a: { c: 1 }, b: 2 }
+    structure_b = { b: 2, a: { c: 1 } }
+    assert_structures_equal(structure_a, structure_b, strict_key_order: false)
+  end
+
   def test_stores_error_with_path_in_getter
     structure_a = { x: 1, a: [{ b: [1, 1, 1] }] }
     structure_b = { x: 1, a: [{ b: [1, 9, 1] }] }
@@ -67,25 +79,33 @@ class StructureCompareTest < MiniTest::Test
     refute_structures_equal(structure_a, structure_b, check_values: true)
   end
 
-  def test_mixed_type_hash_keys_trigger_error_unless_strict_order_set
+  # this was a bug where we compared keys by sorting them, resulting in
+  # an ArgumentError if keys weren't comparable (String vs. Fixnum)
+  def test_mixed_type_hash_works_if_strict_key_order_not_set
     hash = { a: 1, 5 => 6 }
-
-    assert_raises StructureCompare::ArgumentError do
-      assert_structures_equal(hash, hash)
-    end
-
-    assert_structures_equal(hash, hash, strict_key_order: true)
+    assert_structures_equal(hash, hash, strict_key_order: false)
   end
 
-  def test_symbol_keys_are_strings_if_option_set
-    string_hash = {"a" => 1, "b" => 2, 5 => 6}
-    symbol_hash = {a: 1, b: 2, 5 => 6}
+  def test_indifferent_access_option_works_as_expected
+    string_hash = { "a" => 1, "b" => 2, 5 => 6 }
+    symbol_hash = { a: 1, b: 2, 5 => 6 }
 
     refute_structures_equal(string_hash, symbol_hash, strict_key_order: true)
     assert_structures_equal(
       string_hash, symbol_hash,
-      treat_hash_symbols_as_strings: true, strict_key_order: true
+      indifferent_access: true, strict_key_order: true
     )
+  end
+
+  def test_option_for_indifferent_access_raises_if_symbol_and_string_key_present
+    hash = { "a" => 1, a: 2 }
+    assert_structures_equal(hash, hash, strict_key_order: true)
+
+    assert_raises StructureCompare::IndifferentAccessError do
+      assert_structures_equal(
+        hash, hash, strict_key_order: true, indifferent_access: true
+      )
+    end
   end
 
   def test_compares_floats_correctly

@@ -5,7 +5,7 @@ module StructureCompare
       @options = {
         strict_key_order: false,
         check_values: false,
-        treat_hash_symbols_as_strings: false,
+        indifferent_access: false,
         float_tolerance_factor: 0
       }.merge(options)
     end
@@ -45,7 +45,7 @@ module StructureCompare
     end
 
     def check_arrays_equal!(expected, actual)
-      check_equal!(
+      check_values_equal!(
         expected.count, actual.count, "array length: #{expected.count} != #{actual.count}"
       )
 
@@ -61,48 +61,52 @@ module StructureCompare
     def check_hashes_equal!(expected, actual)
       check_hash_keys_equal!(expected, actual)
 
-      expected_values = expected.values
-      actual_values = actual.values
+      expected.each do |key, expected_value|
+        if @options[:indifferent_access]
+          actual_value = with_indifferent_access!(actual, key)
+        else
+          actual_value = actual[key]
+        end
 
-      expected_values.each_with_index do |expected_value, index|
-        key = expected.keys[index]
         path_segment = key.is_a?(Symbol) ? "[:#{key}]" : "[\"#{key}\"]"
         @path.push(path_segment)
 
-        check_structures_equal!(expected_value, actual_values[index])
+        check_structures_equal!(expected_value, actual_value)
         @path.pop
       end
     end
 
+    # TODO safeguard in case there's a key as symbol _and_ hash
     def check_hash_keys_equal!(expected, actual)
       expected_keys = expected.keys
       actual_keys = actual.keys
 
-      if @options[:treat_hash_symbols_as_strings]
+      if @options[:indifferent_access]
         # NOTE: not all hash keys are symbols/strings, only convert symbols
         expected_keys.map! { |key| key.is_a?(Symbol) ? key.to_s : key }
         actual_keys.map! { |key| key.is_a?(Symbol) ? key.to_s : key }
       end
 
-      if @options[:strict_key_order]
-        check_equal!(expected_keys, actual_keys)
-      else
-        begin
-          expected_keys.sort!
-          actual_keys.sort!
-        rescue ::ArgumentError => error
-          raise StructureCompare::ArgumentError.new(
-            "Unable to sort hash keys: \"#{error}\"." +
-            'Try enabling :strict_key_order option to prevent sorting of mixed-type hash keys.'
-          )
-        end
+      failure_message = "hash keys aren't equal"
 
-        check_equal!(expected_keys, actual_keys)
+      if @options[:strict_key_order]
+        if expected_keys != actual_keys
+          not_equal_error!(expected_keys, actual_keys, failure_message)
+        end
+      else
+        # NOTE: first did this with sorting, but can't sort mixed type keys
+        all_keys_present = (
+          expected_keys.all?{ |key| actual.has_key?(key) } &&
+          actual_keys.all?{ |key| expected.has_key?(key) }
+        )
+        if !all_keys_present
+          not_equal_error!(expected_keys, actual_keys, failure_message)
+        end
       end
     end
 
     def check_leafs_equal!(expected, actual)
-      check_equal!(expected, actual) if @options[:check_values]
+      check_values_equal!(expected, actual) if @options[:check_values]
     end
 
     def check_kind_of!(expected, actual)
@@ -112,7 +116,7 @@ module StructureCompare
       end
     end
 
-    def check_equal!(expected, actual, failure_message = nil)
+    def check_values_equal!(expected, actual, failure_message = nil)
       if expected.is_a?(Float) && actual.is_a?(Float)
         is_equal = float_equal_with_tolerance_factor?(
           expected, actual, @options[:float_tolerance_factor]
@@ -140,6 +144,24 @@ module StructureCompare
     def not_equal_error!(expected, actual, failure_message)
       @error = failure_message
       raise StructuresNotEqualError.new() # TODO error message, path
+    end
+
+    def with_indifferent_access!(actual, key)
+      if [Symbol, String].include?(key.class)
+        has_both_types = (actual.has_key?(key) && actual.has_key?(key.to_s))
+        duplicate_key_error!(key) if has_both_types
+
+        actual.has_key?(key.to_s) ? actual[key.to_s] : actual[key.to_sym]
+      else
+        actual[key]
+      end
+    end
+
+    def duplicate_key_error!(key)
+      raise StructureCompare::IndifferentAccessError.new(
+        "#{@path.join}: key is present as string and symbol. " \
+        "can not use indifferent_access option!"
+      )
     end
   end
 end
