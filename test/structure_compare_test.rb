@@ -113,6 +113,20 @@ class StructureCompareTest < MiniTest::Test
         hash, hash, strict_key_order: true, indifferent_access: true
       )
     end
+
+    # this was a bug where exception was raised even if everything is ok
+    hash = { "a" => 1 }
+    assert_structures_equal(hash, hash, indifferent_access: true)
+    hash = { a: 1 }
+    assert_structures_equal(hash, hash, indifferent_access: true)
+  end
+
+  def test_indifferent_access_error_triggers_only_when_both_types_present
+    string_key_hash = { "a" => 1, "b" => 2 }
+    symbol_key_hash = { "a": 1, "b": 2 }
+
+    assert_structures_equal(string_key_hash, symbol_key_hash, indifferent_access: true)
+    assert_structures_equal(symbol_key_hash, string_key_hash, indifferent_access: true)
   end
 
   def test_compares_floats_correctly

@@ -149,7 +149,7 @@ module StructureCompare
 
     def with_indifferent_access!(actual, key)
       if [Symbol, String].include?(key.class)
-        has_both_types = (actual.has_key?(key) && actual.has_key?(key.to_s))
+        has_both_types = (actual.has_key?(key.to_sym) && actual.has_key?(key.to_s))
         duplicate_key_error!(key) if has_both_types
 
         actual.has_key?(key.to_s) ? actual[key.to_s] : actual[key.to_sym]
