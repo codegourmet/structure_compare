@@ -81,13 +81,15 @@ module StructureCompare
       expected_keys = expected.keys
       actual_keys = actual.keys
 
+      failure_message = "hash keys aren't equal. " \
+        "expected: #{expected_keys.map(&:to_s).join(',')}, " \
+        "actual: #{actual_keys.map(&:to_s).join(',')}"
+
       if @options[:indifferent_access]
         # NOTE: not all hash keys are symbols/strings, only convert symbols
         expected_keys.map! { |key| key.is_a?(Symbol) ? key.to_s : key }
         actual_keys.map! { |key| key.is_a?(Symbol) ? key.to_s : key }
       end
-
-      failure_message = "hash keys aren't equal"
 
       if @options[:strict_key_order]
         if expected_keys != actual_keys
