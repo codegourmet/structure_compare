@@ -17,6 +17,12 @@ class StructureCompareTest < MiniTest::Test
     assert_structures_equal({a: 1, b: 2}, {b: 2, a: 1})
     assert_structures_equal({a: 1, b: 2}, {b: 2, a: 1}, strict_key_order: false)
     refute_structures_equal({a: 1, b: 2}, {b: 2, a: 1}, strict_key_order: true)
+
+    # this was a bug with combining relaxed key order and indifferent access
+    assert_structures_equal(
+      {a: 1, b: 2}, {"b": 2, "a": 1},
+      strict_key_order: false, indifferent_access: true
+    )
   end
 
   def test_compares_leaf_value_types

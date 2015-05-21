@@ -92,16 +92,16 @@ module StructureCompare
 
       if @options[:strict_key_order]
         if expected_keys != actual_keys
-          not_equal_error!(expected_keys, actual_keys, failure_message)
+          not_equal_error!(failure_message)
         end
       else
         # NOTE: first did this with sorting, but can't sort mixed type keys
         all_keys_present = (
-          expected_keys.all?{ |key| actual.has_key?(key) } &&
-          actual_keys.all?{ |key| expected.has_key?(key) }
+          expected_keys.all?{ |key| actual_keys.include?(key) } &&
+          actual_keys.all?{ |key| expected_keys.include?(key) }
         )
         if !all_keys_present
-          not_equal_error!(expected_keys, actual_keys, failure_message)
+          not_equal_error!(failure_message)
         end
       end
     end
@@ -113,7 +113,7 @@ module StructureCompare
     def check_kind_of!(expected, actual)
       unless actual.kind_of?(expected.class)
         failure_message = "expected #{actual.class.to_s} to be kind of #{expected.class.to_s}"
-        not_equal_error!(expected, actual, failure_message)
+        not_equal_error!(failure_message)
       end
     end
 
@@ -128,7 +128,7 @@ module StructureCompare
 
       if !is_equal
         failure_message ||= "expected: #{expected.inspect}, got: #{actual.inspect}"
-        not_equal_error!(expected, actual, failure_message)
+        not_equal_error!(failure_message)
       end
     end
 
@@ -142,7 +142,7 @@ module StructureCompare
     end
 
     # TODO make this part of an overridden exception?
-    def not_equal_error!(expected, actual, failure_message)
+    def not_equal_error!(failure_message)
       @error = failure_message
       raise StructuresNotEqualError.new() # TODO error message, path
     end
