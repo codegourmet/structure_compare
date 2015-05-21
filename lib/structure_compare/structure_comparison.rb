@@ -26,7 +26,7 @@ module StructureCompare
 
     # TODO doc
     def error
-      "#{@path.join} : #{@error}"
+      "root#{@path.join} : #{@error}"
     end
 
     protected
