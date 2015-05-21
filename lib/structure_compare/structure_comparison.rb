@@ -4,7 +4,7 @@ module StructureCompare
     def initialize(options = {})
       @options = {
         strict_key_order: false,
-        check_values: false,
+        check_values: true,
         indifferent_access: false,
         float_tolerance_factor: 0
       }.merge(options)
@@ -118,7 +118,7 @@ module StructureCompare
     end
 
     def check_values_equal!(expected, actual, failure_message = nil)
-      if expected.is_a?(Float) && actual.is_a?(Float)
+      if expected.is_a?(Float) || actual.is_a?(Float)
         is_equal = float_equal_with_tolerance_factor?(
           expected, actual, @options[:float_tolerance_factor]
         )

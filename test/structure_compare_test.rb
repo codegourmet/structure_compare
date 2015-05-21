@@ -34,7 +34,7 @@ class StructureCompareTest < MiniTest::Test
   end
 
   def test_leaf_values_are_compared_if_option_set
-    assert_structures_equal({a: 1, b: 2}, {a: 111, b: 222})
+    assert_structures_equal({a: 1, b: 2}, {a: 111, b: 222}, check_values: false)
     refute_structures_equal({a: 1, b: 2}, {a: 111, b: 222}, check_values: true)
 
     assert_structures_equal(%w(a b c d), %w(a b c d))
@@ -71,7 +71,8 @@ class StructureCompareTest < MiniTest::Test
     structure_a = { x: 1, a: [{ b: [1, "FOO", 1] }] }
     structure_b = { x: 1, a: [{ b: [1, "BAR", 1] }] }
 
-    assert_structures_equal(structure_a, structure_b)
+    assert_structures_equal(structure_a, structure_b, check_values: false)
+
     comparison = StructureCompare::StructureComparison.new(check_values: true)
     comparison.structures_are_equal?(structure_a, structure_b)
     assert_match "FOO", comparison.error
