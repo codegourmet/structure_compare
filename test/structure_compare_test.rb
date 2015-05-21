@@ -9,7 +9,8 @@ class StructureCompareTest < MiniTest::Test
 
   def test_compares_keys_of_hashes
     refute_structures_equal({a: 1, b: 2}, {a: 1, other_key: 2})
-    refute_structures_equal({a: 1, b: 2}, {a: 1, b: 2, c: 3})
+    refute_structures_equal({a: 1, b: 2}, {a: 1, b: 2, "c" => 3})
+    refute_structures_equal({a: 1, b: 2, "c" => 3}, {a: 1, b: 2})
   end
 
   def test_hash_key_order_is_compared_if_option_set

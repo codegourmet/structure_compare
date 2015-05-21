@@ -68,7 +68,7 @@ module StructureCompare
           actual_value = actual[key]
         end
 
-        path_segment = key.is_a?(Symbol) ? "[:#{key}]" : "[\"#{key}\"]"
+        path_segment = "[#{dump_key(key)}]"
         @path.push(path_segment)
 
         check_structures_equal!(expected_value, actual_value)
@@ -82,8 +82,7 @@ module StructureCompare
       actual_keys = actual.keys
 
       failure_message = "hash keys aren't equal. " \
-        "expected: #{expected_keys.map(&:to_s).join(',')}, " \
-        "actual: #{actual_keys.map(&:to_s).join(',')}"
+        "expected: #{dump_keys(expected_keys)}, actual: #{dump_keys(actual_keys)}"
 
       if @options[:indifferent_access]
         # NOTE: not all hash keys are symbols/strings, only convert symbols
@@ -164,6 +163,15 @@ module StructureCompare
         "#{@path.join}: key is present as string and symbol. " \
         "can not use indifferent_access option!"
       )
+    end
+
+    def dump_keys(keys)
+      key_names = keys.map { |key| dump_key(key) }
+      "[#{key_names.join(', ')}]"
+    end
+
+    def dump_key(key)
+      key.is_a?(Symbol) ? ":#{key}" : "\"#{key}\""
     end
   end
 end
