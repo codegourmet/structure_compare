@@ -1,5 +1,5 @@
 SimpleCov.start do
-  coverage_dir "test/coverage"
+  coverage_dir "log/coverage"
   command_name "tests"
 
   use_merging true

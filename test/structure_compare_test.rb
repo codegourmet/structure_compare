@@ -4,27 +4,6 @@ require_relative '../lib/structure_compare/minitest'
 
 class StructureCompareTest < MiniTest::Test
 
-  def setup
-  end
-
-  def test_compares_keys_of_hashes
-    refute_structures_equal({a: 1, b: 2}, {a: 1, other_key: 2})
-    refute_structures_equal({a: 1, b: 2}, {a: 1, b: 2, "c" => 3})
-    refute_structures_equal({a: 1, b: 2, "c" => 3}, {a: 1, b: 2})
-  end
-
-  def test_hash_key_order_is_compared_if_option_set
-    assert_structures_equal({a: 1, b: 2}, {b: 2, a: 1})
-    assert_structures_equal({a: 1, b: 2}, {b: 2, a: 1}, strict_key_order: false)
-    refute_structures_equal({a: 1, b: 2}, {b: 2, a: 1}, strict_key_order: true)
-
-    # this was a bug with combining relaxed key order and indifferent access
-    assert_structures_equal(
-      {a: 1, b: 2}, {"b": 2, "a": 1},
-      strict_key_order: false, indifferent_access: true
-    )
-  end
-
   def test_compares_leaf_value_types
     assert_structures_equal({a: 1, b: 2}, {b: 2, a: 1})
     refute_structures_equal({a: 1, b: 2}, {a: 1, b: 2.0})
@@ -39,11 +18,6 @@ class StructureCompareTest < MiniTest::Test
 
     assert_structures_equal(%w(a b c d), %w(a b c d))
     refute_structures_equal(%w(a b c d), %w(A b c d), check_values: true)
-  end
-
-  def test_compares_arrays
-    assert_structures_equal([1, 2, 3], [1, 2, 3])
-    refute_structures_equal([1, 2], [1, 2, 3])
   end
 
   def test_with_strict_key_order_off_compares_correct_values
@@ -77,14 +51,6 @@ class StructureCompareTest < MiniTest::Test
     comparison.structures_are_equal?(structure_a, structure_b)
     assert_match "FOO", comparison.error
     assert_match "BAR", comparison.error
-  end
-
-  def test_compares_deep_structures
-    structure_a = { x: 1, a: [{ b: [1, 1, 1] }] }
-    structure_b = { x: 1, a: [{ b: [1, 9, 1] }] }
-
-    assert_structures_equal(structure_a, structure_a, check_values: true)
-    refute_structures_equal(structure_a, structure_b, check_values: true)
   end
 
   # this was a bug where we compared keys by sorting them, resulting in

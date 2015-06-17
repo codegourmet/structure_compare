@@ -1,13 +1,6 @@
-guard :minitest do
-
-  # run all tests when lib main module file changes
-  watch(%r{^lib/structure_compare.rb$}) { "test" }
-
-  # run accompanying test for single source file if it changes
-  watch(%r{^lib/(.*)\.rb$}) {|m| "test/#{m[1]}_test.rb" }
-
-  # run test whenever it changes
-  watch(%r{^test/(.*)\/?(.*)?_test\.rb$})
-
+# guard 'rspec', cmd: '--drb --format Fuubar --color' do
+guard 'rspec', cmd: 'bundle exec rspec --format documentation --order rand' do
+  watch(%r{spec/.+_spec\.rb$})
+  watch(%r{^lib/.+\.rb$}) { 'spec' }
+  watch('spec/spec_helper.rb') { 'spec' }
 end
-

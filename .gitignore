@@ -1,5 +1,5 @@
 # SimpleCov
-test/coverage
+log/coverage
 
 # Bundler
 Gemfile.lock
@@ -11,8 +11,8 @@ Gemfile.lock
 /InstalledFiles
 /pkg/
 /spec/reports/
-/test/tmp/
-/test/version_tmp/
+/spec/tmp/
+/spec/version_tmp/
 /tmp/
 
 ## Specific to RubyMotion:

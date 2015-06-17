@@ -19,10 +19,17 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
 
   gem.add_development_dependency "rake",  "~> 10.1"
+
   gem.add_development_dependency "guard"
-  gem.add_development_dependency "guard-minitest"
-  gem.add_development_dependency "minitest"
-  gem.add_development_dependency "minitest-reporters"
+  gem.add_development_dependency "guard-rspec"
+  gem.add_development_dependency "pry-byebug"
+
+  # gem.add_development_dependency "guard"
+  # gem.add_development_dependency "guard-minitest"
+  # gem.add_development_dependency "minitest"
+  # gem.add_development_dependency "minitest-reporters"
+
+  gem.add_development_dependency "rspec"
   gem.add_development_dependency "simplecov"
   gem.add_development_dependency "rubocop"
 end

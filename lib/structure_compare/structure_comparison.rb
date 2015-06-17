@@ -12,6 +12,7 @@ module StructureCompare
 
     # TODO doc
     def structures_are_equal?(expected, actual)
+      # require 'pry'; binding.pry if @options[:debug]
       @path = []
       @error = nil
 
