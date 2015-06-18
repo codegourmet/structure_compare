@@ -4,26 +4,6 @@ require_relative '../lib/structure_compare/minitest'
 
 class StructureCompareTest < MiniTest::Test
 
-  def test_leaf_values_are_compared_if_option_set
-    assert_structures_equal({a: 1, b: 2}, {a: 111, b: 222}, check_values: false)
-    refute_structures_equal({a: 1, b: 2}, {a: 111, b: 222}, check_values: true)
-
-    assert_structures_equal(%w(a b c d), %w(a b c d))
-    refute_structures_equal(%w(a b c d), %w(A b c d), check_values: true)
-  end
-
-  def test_with_strict_key_order_off_compares_correct_values
-    structure_a = { a: 1, b: 2 }
-    structure_b = { b: 2, a: 1 }
-    assert_structures_equal(
-      structure_a, structure_b, check_values: true, strict_key_order: false
-    )
-
-    structure_a = { a: { c: 1 }, b: 2 }
-    structure_b = { b: 2, a: { c: 1 } }
-    assert_structures_equal(structure_a, structure_b, strict_key_order: false)
-  end
-
   def test_stores_error_with_path_in_getter
     structure_a = { x: 1, a: [{ b: [1, 1, 1] }] }
     structure_b = { x: 1, a: [{ b: [1, 9, 1] }] }
