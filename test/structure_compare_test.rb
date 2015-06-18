@@ -25,24 +25,6 @@ class StructureCompareTest < MiniTest::Test
     assert_match "BAR", comparison.error
   end
 
-  # this was a bug where we compared keys by sorting them, resulting in
-  # an ArgumentError if keys weren't comparable (String vs. Fixnum)
-  def test_mixed_type_hash_works_if_strict_key_order_not_set
-    hash = { a: 1, 5 => 6 }
-    assert_structures_equal(hash, hash, strict_key_order: false)
-  end
-
-  def test_indifferent_access_option_works_as_expected
-    string_hash = { "a" => 1, "b" => 2, 5 => 6 }
-    symbol_hash = { a: 1, b: 2, 5 => 6 }
-
-    refute_structures_equal(string_hash, symbol_hash, strict_key_order: true)
-    assert_structures_equal(
-      string_hash, symbol_hash,
-      indifferent_access: true, strict_key_order: true
-    )
-  end
-
   def test_option_for_indifferent_access_raises_if_symbol_and_string_key_present
     hash = { "a" => 1, a: 2 }
     assert_structures_equal(hash, hash, strict_key_order: true)

@@ -1,10 +1,10 @@
 require_relative '../spec_helper'
 
 describe 'hash comparison' do
-  subject(:simple_hash) { { a: 1, b: 2 } }
+  subject { { a: 1, b: 2 } }
 
   context 'when hash keys are equal' do
-    it { is_expected.to struct_eq(simple_hash) }
+    it { is_expected.to struct_eq(subject) }
   end
 
   context 'when all hash keys are different' do

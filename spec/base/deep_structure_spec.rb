@@ -1,11 +1,15 @@
 require_relative '../spec_helper'
 
 describe 'deep structure comparison' do
-  subject(:deep_structure)     { { x: 1, a: [{ b: [1] }] } }
-  let(:other_deep_structure) { { x: 1, a: [{ c: [1] }] } }
+  subject { {
+    x: 1, a: [{ b: [1] }]
+  } }
+  let(:other_deep_structure) { {
+    x: 1, a: [{ c: [1] }]
+  } }
 
   context 'when equal' do
-    it { is_expected.to struct_eq(deep_structure) }
+    it { is_expected.to struct_eq(subject) }
   end
 
   context 'when not equal' do

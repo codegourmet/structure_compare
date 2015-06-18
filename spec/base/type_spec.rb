@@ -2,9 +2,9 @@ require_relative '../spec_helper'
 
 context 'leaf type comparison' do
   context "with hashes" do
-    subject(:hash_with_ints) { { a: 1, b: 2 } }
+    subject { { a: 1, b: 2 } }
 
-    it { is_expected.to struct_eq(hash_with_ints) }
+    it { is_expected.to struct_eq(subject) }
 
     context "when comparing int vs float" do
       hash_with_float = { a: 1, b: 2.0 }

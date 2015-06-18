@@ -1,7 +1,7 @@
 require_relative '../spec_helper'
 
 context 'with option strict_key_order' do
-  subject(:simple_hash) { { a: 1, b: 2 } }
+  subject { { a: 1, b: 2 } }
   let(:reverse_simple_hash) { { b: 2, a: 1 } }
 
   context 'when defaulted' do
@@ -22,5 +22,12 @@ context 'with option strict_key_order' do
         strict_key_order: false, indifferent_access: true
       )
     end
+  end
+
+  context 'when presented with mixed key types' do
+    # this was a bug where we compared keys by sorting them, resulting in
+    # an ArgumentError if keys weren't comparable (String vs. Fixnum)
+    subject(:mixed_hash) { { a: 1, 5 => 6 } }
+    it { is_expected.to struct_eq(mixed_hash) }
   end
 end
