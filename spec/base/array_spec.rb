@@ -1,6 +1,6 @@
 require_relative '../spec_helper'
 
-context 'arrays' do
+context 'array comparison' do
   subject(:simple_array) { [1, 2, 3] }
 
   context 'when equal' do

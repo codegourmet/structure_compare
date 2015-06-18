@@ -4,14 +4,6 @@ require_relative '../lib/structure_compare/minitest'
 
 class StructureCompareTest < MiniTest::Test
 
-  def test_compares_leaf_value_types
-    assert_structures_equal({a: 1, b: 2}, {b: 2, a: 1})
-    refute_structures_equal({a: 1, b: 2}, {a: 1, b: 2.0})
-
-    assert_structures_equal(%w(a b c d), %w(a b c d))
-    refute_structures_equal(%w(a b c d), ['a', 'b', 'c', 111])
-  end
-
   def test_leaf_values_are_compared_if_option_set
     assert_structures_equal({a: 1, b: 2}, {a: 111, b: 222}, check_values: false)
     refute_structures_equal({a: 1, b: 2}, {a: 111, b: 222}, check_values: true)

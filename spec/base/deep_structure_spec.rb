@@ -1,6 +1,6 @@
 require_relative '../spec_helper'
 
-describe 'deep structures' do
+describe 'deep structure comparison' do
   subject(:deep_structure)     { { x: 1, a: [{ b: [1] }] } }
   let(:other_deep_structure) { { x: 1, a: [{ c: [1] }] } }
 

@@ -1,6 +1,6 @@
 require_relative '../spec_helper'
 
-describe 'hashes' do
+describe 'hash comparison' do
   subject(:simple_hash) { { a: 1, b: 2 } }
 
   context 'when hash keys are equal' do
